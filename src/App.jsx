@@ -19,7 +19,7 @@ function App() {
                 <TopBar appName="Job Notification App" />
 
                 <Layout>
-                    <div style={{ maxWidth: '720px', margin: '0 auto', paddingTop: 'var(--space-5)' }}>
+                    <div style={{ paddingTop: 'var(--space-5)' }}>
                         <Routes>
                             <Route path="/" element={<HomePage />} />
                             <Route path="/dashboard" element={<DashboardPage />} />
