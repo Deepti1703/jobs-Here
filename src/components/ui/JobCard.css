@@ -58,6 +58,70 @@
     color: #777;
 }
 
+.status-badge {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 2px;
+    color: #fff;
+    letter-spacing: 0.05em;
+}
+
+.status-badge.applied {
+    background-color: #3498db;
+}
+
+.status-badge.rejected {
+    background-color: #e74c3c;
+}
+
+.status-badge.selected {
+    background-color: #27ae60;
+}
+
+.status-selector {
+    padding: 8px;
+    background: #fdfdfd;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+}
+
+.status-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+}
+
+.status-btn {
+    font-size: 10px;
+    padding: 4px;
+    border: 1px solid #eee;
+    background: #fff;
+    cursor: pointer;
+    border-radius: 2px;
+    color: #888;
+    transition: all 0.2s;
+}
+
+.status-btn:hover {
+    border-color: #ccc;
+}
+
+.status-btn.active {
+    background: #555;
+    color: #fff;
+    border-color: #555;
+}
+
+.mb-16 {
+    margin-bottom: 16px;
+}
+
+.mb-4 {
+    margin-bottom: 4px;
+}
+
 .items-center {
     align-items: center;
 }

@@ -51,6 +51,17 @@ export const FilterBar = ({ filters, onFilterChange, showScoreSort }) => {
                 </select>
 
                 <select
+                    value={filters.status || ''}
+                    onChange={(e) => onFilterChange('status', e.target.value)}
+                >
+                    <option value="">All Status</option>
+                    <option value="Not Applied">Not Applied</option>
+                    <option value="Applied">Applied</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Selected">Selected</option>
+                </select>
+
+                <select
                     value={filters.source}
                     onChange={(e) => onFilterChange('source', e.target.value)}
                 >

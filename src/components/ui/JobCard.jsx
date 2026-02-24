@@ -2,8 +2,8 @@ import React from 'react';
 import { Button } from './Button';
 import './JobCard.css';
 
-export const JobCard = ({ job, onView, onSave, isSaved, matchScore }) => {
-    const { title, company, location, mode, experience, salaryRange, source, postedDaysAgo } = job;
+export const JobCard = ({ job, onView, onSave, isSaved, matchScore, status, onStatusChange }) => {
+    const { id, title, company, location, mode, experience, salaryRange, source, postedDaysAgo } = job;
 
     const getScoreCategory = (score) => {
         if (score >= 80) return 'high';
@@ -11,6 +11,8 @@ export const JobCard = ({ job, onView, onSave, isSaved, matchScore }) => {
         if (score >= 40) return 'low';
         return 'none';
     };
+
+    const currentStatus = status || 'Not Applied';
 
     return (
         <div className="job-card">
@@ -20,6 +22,11 @@ export const JobCard = ({ job, onView, onSave, isSaved, matchScore }) => {
                     {matchScore !== undefined && (
                         <span className={`match-badge ${getScoreCategory(matchScore)}`}>
                             {matchScore}% Match
+                        </span>
+                    )}
+                    {currentStatus !== 'Not Applied' && (
+                        <span className={`status-badge ${currentStatus.toLowerCase().replace(' ', '-')}`}>
+                            {currentStatus}
                         </span>
                     )}
                 </div>
@@ -38,6 +45,21 @@ export const JobCard = ({ job, onView, onSave, isSaved, matchScore }) => {
                 </div>
                 <div className="meta-item">
                     <span className="meta-label">Salary:</span> {salaryRange}
+                </div>
+            </div>
+
+            <div className="status-selector mb-16">
+                <label className="input-label mb-4" style={{ fontSize: '10px' }}>Application Status</label>
+                <div className="status-buttons">
+                    {['Not Applied', 'Applied', 'Rejected', 'Selected'].map(s => (
+                        <button
+                            key={s}
+                            className={`status-btn ${currentStatus === s ? 'active' : ''}`}
+                            onClick={() => onStatusChange(id, s)}
+                        >
+                            {s}
+                        </button>
+                    ))}
                 </div>
             </div>
 

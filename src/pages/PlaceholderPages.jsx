@@ -14,6 +14,19 @@ const PageContainer = ({ children, fullWidth = false }) => (
     </div>
 );
 
+const Toast = ({ message, onExited }) => {
+    useEffect(() => {
+        const timer = setTimeout(onExited, 3000);
+        return () => clearTimeout(timer);
+    }, [onExited]);
+
+    return (
+        <div className="toast-notification">
+            {message}
+        </div>
+    );
+};
+
 const calculateMatchScore = (job, prefs) => {
     if (!prefs) return 0;
 
@@ -82,15 +95,18 @@ export const HomePage = () => (
 export const DashboardPage = () => {
     const [filteredJobs, setFilteredJobs] = useState([]);
     const [savedJobIds, setSavedJobIds] = useState([]);
+    const [jobStatuses, setJobStatuses] = useState({});
     const [selectedJob, setSelectedJob] = useState(null);
     const [preferences, setPreferences] = useState(null);
     const [showOnlyMatches, setShowOnlyMatches] = useState(false);
+    const [toast, setToast] = useState(null);
     const [filters, setFilters] = useState({
         query: '',
         location: '',
         mode: '',
         experience: '',
         source: '',
+        status: '',
         sort: 'latest'
     });
 
@@ -100,12 +116,16 @@ export const DashboardPage = () => {
 
         const prefs = JSON.parse(localStorage.getItem('jobTrackerPreferences'));
         setPreferences(prefs);
+
+        const statuses = JSON.parse(localStorage.getItem('jobTrackerStatus') || '{}');
+        setJobStatuses(statuses);
     }, []);
 
     useEffect(() => {
         let result = jobs.map(job => ({
             ...job,
-            matchScore: calculateMatchScore(job, preferences)
+            matchScore: calculateMatchScore(job, preferences),
+            status: jobStatuses[job.id] || 'Not Applied'
         }));
 
         result = result.filter(job => {
@@ -115,9 +135,10 @@ export const DashboardPage = () => {
             const matchesMode = !filters.mode || job.mode === filters.mode;
             const matchesExp = !filters.experience || job.experience === filters.experience;
             const matchesSource = !filters.source || job.source === filters.source;
+            const matchesStatus = !filters.status || job.status === filters.status;
             const matchesThreshold = !showOnlyMatches || (preferences && job.matchScore >= (preferences.minMatchScore || 40));
 
-            return matchesQuery && matchesLocation && matchesMode && matchesExp && matchesSource && matchesThreshold;
+            return matchesQuery && matchesLocation && matchesMode && matchesExp && matchesSource && matchesStatus && matchesThreshold;
         });
 
         if (filters.sort === 'salary') {
@@ -132,10 +153,30 @@ export const DashboardPage = () => {
         }
 
         setFilteredJobs(result);
-    }, [filters, preferences, showOnlyMatches]);
+    }, [filters, preferences, showOnlyMatches, jobStatuses]);
 
     const handleFilterChange = (key, value) => {
         setFilters(prev => ({ ...prev, [key]: value }));
+    };
+
+    const handleStatusChange = (jobId, newStatus) => {
+        const updatedStatuses = { ...jobStatuses, [jobId]: newStatus };
+        localStorage.setItem('jobTrackerStatus', JSON.stringify(updatedStatuses));
+        setJobStatuses(updatedStatuses);
+
+        // Log history for digest
+        const history = JSON.parse(localStorage.getItem('jobTrackerStatusHistory') || '[]');
+        const job = jobs.find(j => j.id === jobId);
+        history.unshift({
+            jobId,
+            title: job.title,
+            company: job.company,
+            status: newStatus,
+            date: new Date().toISOString()
+        });
+        localStorage.setItem('jobTrackerStatusHistory', JSON.stringify(history.slice(0, 50)));
+
+        setToast(`Status updated: ${newStatus}`);
     };
 
     const toggleSave = (job) => {
@@ -191,6 +232,8 @@ export const DashboardPage = () => {
                             onSave={toggleSave}
                             isSaved={savedJobIds.includes(job.id)}
                             matchScore={preferences ? job.matchScore : undefined}
+                            status={jobStatuses[job.id]}
+                            onStatusChange={handleStatusChange}
                         />
                     ))}
                 </div>
@@ -202,6 +245,8 @@ export const DashboardPage = () => {
             )}
 
             <JobModal job={selectedJob} onClose={() => setSelectedJob(null)} />
+
+            {toast && <Toast message={toast} onExited={() => setToast(null)} />}
 
             <style>{`
                 .job-grid {
@@ -229,6 +274,23 @@ export const DashboardPage = () => {
                 }
                 .cursor-pointer { cursor: pointer; }
                 .justify-between { justify-content: space-between; }
+                .toast-notification {
+                    position: fixed;
+                    bottom: 32px;
+                    right: 32px;
+                    background: #333;
+                    color: #fff;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    z-index: 1000;
+                    font-size: 14px;
+                    animation: slideIn 0.3s ease-out;
+                }
+                @keyframes slideIn {
+                    from { transform: translateY(100%); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
             `}</style>
         </PageContainer>
     );
@@ -238,10 +300,15 @@ export const SavedPage = () => {
     const [savedJobs, setSavedJobs] = useState([]);
     const [selectedJob, setSelectedJob] = useState(null);
     const [preferences, setPreferences] = useState(null);
+    const [jobStatuses, setJobStatuses] = useState({});
+    const [toast, setToast] = useState(null);
 
     useEffect(() => {
         const prefs = JSON.parse(localStorage.getItem('jobTrackerPreferences'));
         setPreferences(prefs);
+
+        const statuses = JSON.parse(localStorage.getItem('jobTrackerStatus') || '{}');
+        setJobStatuses(statuses);
 
         const savedIds = JSON.parse(localStorage.getItem('savedJobs') || '[]');
         const filtered = jobs.filter(j => savedIds.includes(j.id)).map(job => ({
@@ -258,6 +325,25 @@ export const SavedPage = () => {
         setSavedJobs(savedJobs.filter(j => j.id !== job.id));
     };
 
+    const handleStatusChange = (jobId, newStatus) => {
+        const updatedStatuses = { ...jobStatuses, [jobId]: newStatus };
+        localStorage.setItem('jobTrackerStatus', JSON.stringify(updatedStatuses));
+        setJobStatuses(updatedStatuses);
+
+        const history = JSON.parse(localStorage.getItem('jobTrackerStatusHistory') || '[]');
+        const job = jobs.find(j => j.id === jobId);
+        history.unshift({
+            jobId,
+            title: job.title,
+            company: job.company,
+            status: newStatus,
+            date: new Date().toISOString()
+        });
+        localStorage.setItem('jobTrackerStatusHistory', JSON.stringify(history.slice(0, 50)));
+
+        setToast(`Status updated: ${newStatus}`);
+    };
+
     return (
         <PageContainer fullWidth={true}>
             <h1 className="mb-24">Saved Jobs</h1>
@@ -272,6 +358,8 @@ export const SavedPage = () => {
                             onSave={handleRemove}
                             isSaved={true}
                             matchScore={preferences ? job.matchScore : undefined}
+                            status={jobStatuses[job.id]}
+                            onStatusChange={handleStatusChange}
                         />
                     ))}
                 </div>
@@ -286,11 +374,26 @@ export const SavedPage = () => {
 
             <JobModal job={selectedJob} onClose={() => setSelectedJob(null)} />
 
+            {toast && <Toast message={toast} onExited={() => setToast(null)} />}
+
             <style>{`
                 .job-grid {
                     display: grid;
                     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
                     gap: var(--space-3);
+                }
+                .toast-notification {
+                    position: fixed;
+                    bottom: 32px;
+                    right: 32px;
+                    background: #333;
+                    color: #fff;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    z-index: 1000;
+                    font-size: 14px;
+                    animation: slideIn 0.3s ease-out;
                 }
             `}</style>
         </PageContainer>
@@ -301,6 +404,7 @@ export const DigestPage = () => {
     const [digest, setDigest] = useState(null);
     const [prefs, setPrefs] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [statusHistory, setStatusHistory] = useState([]);
 
     const todayStr = new Date().toISOString().split('T')[0];
     const digestKey = `jobTrackerDigest_${todayStr}`;
@@ -313,23 +417,21 @@ export const DigestPage = () => {
         if (storedDigest) {
             setDigest(storedDigest);
         }
+
+        const history = JSON.parse(localStorage.getItem('jobTrackerStatusHistory') || '[]');
+        setStatusHistory(history);
     }, []);
 
     const generateDigest = () => {
         setIsGenerating(true);
-
-        // Simulate minor delay
         setTimeout(() => {
             const scoredJobs = jobs.map(job => ({
                 ...job,
                 matchScore: calculateMatchScore(job, prefs)
             }));
-
-            // Sort by matchScore desc, then postedDaysAgo asc
             const selected = scoredJobs
                 .sort((a, b) => b.matchScore - a.matchScore || a.postedDaysAgo - b.postedDaysAgo)
                 .slice(0, 10);
-
             localStorage.setItem(digestKey, JSON.stringify(selected));
             setDigest(selected);
             setIsGenerating(false);
@@ -338,18 +440,15 @@ export const DigestPage = () => {
 
     const copyToClipboard = () => {
         if (!digest) return;
-        const text = digest.map((j, i) => `${i + 1}. ${j.title} at ${j.company} (${j.matchScore}% Match) - ${j.location}`).join('\n');
-        const fullText = `Top 10 Jobs For You — 9AM Digest (${todayStr})\n\n${text}\n\nGenerated by Job Notification Tracker.`;
-        navigator.clipboard.writeText(fullText);
-        alert('Digest copied to clipboard!');
+        const text = digest.map((j, i) => `${i + 1}. ${j.title} at ${j.company} (${j.matchScore}% Match)`).join('\n');
+        navigator.clipboard.writeText(`Top 10 Jobs — ${todayStr}\n\n${text}`);
+        alert('Digest copied!');
     };
 
     const createEmailDraft = () => {
         if (!digest) return;
         const subject = encodeURIComponent("My 9AM Job Digest");
-        const body = encodeURIComponent(`Top 10 Jobs For You — 9AM Digest (${todayStr})\n\n` +
-            digest.map((j, i) => `${i + 1}. ${j.title} at ${j.company}\n   Match Score: ${j.matchScore}%\n   Location: ${j.location}\n   Experience: ${j.experience}\n`).join('\n') +
-            "\nThis digest was generated based on your preferences.");
+        const body = encodeURIComponent(digest.map((j, i) => `${i + 1}. ${j.title} at ${j.company}`).join('\n'));
         window.location.href = `mailto:?subject=${subject}&body=${body}`;
     };
 
@@ -386,73 +485,64 @@ export const DigestPage = () => {
                 Demo Mode: Daily 9AM trigger simulated manually.
             </p>
 
-            {digest ? (
-                <div className="digest-container">
-                    <Card padding="large" className="digest-card">
+            <div className="flex flex-col gap-32">
+                {digest && (
+                    <Card padding="large" className="digest-card" style={{ maxWidth: '100%' }}>
                         <div className="digest-header mb-40">
                             <h2 className="serif mb-4">Top 10 Jobs For You — 9AM Digest</h2>
-                            <p style={{ color: '#666', borderBottom: '1px solid #eee', paddingBottom: '16px' }}>{new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                            <p style={{ color: '#666' }}>{new Date().toLocaleDateString('en-IN', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
                         </div>
-
                         <div className="digest-list">
-                            {digest.length > 0 ? digest.map((job, idx) => (
-                                <div key={job.id} className="digest-item mb-32">
-                                    <div className="flex justify-between items-start mb-8">
-                                        <div>
-                                            <h4 className="serif mb-4" style={{ fontSize: '18px', margin: 0 }}>{idx + 1}. {job.title}</h4>
-                                            <p style={{ color: '#555', fontSize: '14px', margin: 0 }}>{job.company} • {job.location} • {job.experience}</p>
-                                        </div>
-                                        <div className="match-pill" style={{ background: job.matchScore >= 80 ? '#2ecc71' : (job.matchScore >= 60 ? '#f1c40f' : '#95a5a6') }}>
+                            {digest.map((job, idx) => (
+                                <div key={job.id} className="digest-item mb-24 pb-24" style={{ borderBottom: '1px solid #f0f0f0' }}>
+                                    <div className="flex justify-between">
+                                        <h4 className="serif" style={{ margin: 0 }}>{idx + 1}. {job.title}</h4>
+                                        <div className="match-pill" style={{ background: job.matchScore >= 80 ? '#2ecc71' : '#f1c40f', padding: '2px 8px', borderRadius: '4px', color: '#fff', fontSize: '10px' }}>
                                             {job.matchScore}% Match
                                         </div>
                                     </div>
-                                    <a href={job.applyUrl} target="_blank" rel="noopener noreferrer">
-                                        <Button variant="secondary" size="small" style={{ fontSize: '12px', padding: '4px 12px' }}>Apply</Button>
-                                    </a>
+                                    <p style={{ fontSize: '14px', color: '#666', margin: '4px 0' }}>{job.company} • {job.location}</p>
                                 </div>
-                            )) : (
-                                <p style={{ textAlign: 'center', color: '#666' }}>No matching roles today. Check again tomorrow.</p>
-                            )}
-                        </div>
-
-                        <div className="digest-footer mt-40" style={{ borderTop: '1px solid #eee', paddingTop: '16px', fontSize: '13px', color: '#999', textAlign: 'center' }}>
-                            This digest was generated based on your preferences.
+                            ))}
                         </div>
                     </Card>
-                </div>
-            ) : (
-                <Card padding="large" style={{ textAlign: 'center', borderStyle: 'dotted' }}>
-                    <p style={{ color: '#666' }}>Ready to curate your top matches? Click generate to simulate your 9AM daily digest.</p>
+                )}
+
+                <Card padding="large">
+                    <h3 className="serif mb-24">Recent Status Updates</h3>
+                    {statusHistory.length > 0 ? (
+                        <div className="history-list">
+                            {statusHistory.slice(0, 10).map((update, idx) => (
+                                <div key={idx} className="flex justify-between items-center mb-16 pb-16" style={{ borderBottom: '1px solid #f9f9f9' }}>
+                                    <div>
+                                        <p style={{ fontWeight: '600', margin: 0 }}>{update.title}</p>
+                                        <p style={{ fontSize: '12px', color: '#888', margin: 0 }}>{update.company} • {new Date(update.date).toLocaleDateString()}</p>
+                                    </div>
+                                    <span className={`status-badge ${update.status.toLowerCase().replace(' ', '-')}`}>
+                                        {update.status}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p style={{ color: '#999', fontSize: '14px' }}>No recent updates. Start tracking your applications to see history here.</p>
+                    )}
                 </Card>
-            )}
+            </div>
 
             <style>{`
-                .digest-container {
-                    display: flex;
-                    justify-content: center;
-                }
-                .digest-card {
-                    max-width: 720px;
-                    width: 100%;
-                    background: #fff;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-                }
-                .digest-item {
-                    border-bottom: 1px solid #f9f9f9;
-                    padding-bottom: 24px;
-                }
-                .digest-item:last-child {
-                    border-bottom: none;
-                }
-                .match-pill {
-                    color: #fff;
-                    font-size: 11px;
+                .status-badge {
+                    font-size: 10px;
                     font-weight: 700;
-                    padding: 4px 10px;
-                    border-radius: 20px;
+                    text-transform: uppercase;
+                    padding: 2px 8px;
+                    border-radius: 2px;
+                    color: #fff;
                 }
-                .flex-wrap { flex-wrap: wrap; }
-                .gap-12 { gap: 12px; }
+                .status-badge.applied { background-color: #3498db; }
+                .status-badge.rejected { background-color: #e74c3c; }
+                .status-badge.selected { background-color: #27ae60; }
+                .status-badge.not-applied { background-color: #95a5a6; }
             `}</style>
         </PageContainer>
     );
