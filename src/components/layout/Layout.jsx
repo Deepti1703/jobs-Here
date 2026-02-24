@@ -1,17 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import './Layout.css';
 
-export const TopBar = ({ appName, step, totalSteps, status }) => (
-    <header className="top-bar">
-        <div className="top-bar-left">{appName}</div>
-        <div className="top-bar-center">Step {step} / {totalSteps}</div>
-        <div className="top-bar-right">
-            <span className={`status-badge ${status.toLowerCase().replace(' ', '-')}`}>
-                {status}
-            </span>
-        </div>
-    </header>
-);
+export const TopBar = ({ appName }) => {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+    return (
+        <header className="top-bar">
+            <div className="top-bar-left">
+                <NavLink to="/" className="app-logo">{appName}</NavLink>
+            </div>
+
+            <button className="mobile-toggle" onClick={toggleMenu} aria-label="Toggle Menu">
+                <span className="hamburger"></span>
+            </button>
+
+            <nav className={`top-bar-nav ${isMenuOpen ? 'open' : ''}`}>
+                <NavLink to="/dashboard" onClick={() => setIsMenuOpen(false)}>Dashboard</NavLink>
+                <NavLink to="/saved" onClick={() => setIsMenuOpen(false)}>Saved</NavLink>
+                <NavLink to="/digest" onClick={() => setIsMenuOpen(false)}>Digest</NavLink>
+                <NavLink to="/settings" onClick={() => setIsMenuOpen(false)}>Settings</NavLink>
+                <NavLink to="/proof" onClick={() => setIsMenuOpen(false)}>Proof</NavLink>
+            </nav>
+
+            <div className="top-bar-right">
+                <div className="status-badge shipped">Online</div>
+            </div>
+        </header>
+    );
+};
 
 export const ContextHeader = ({ title, subtext, eyebrow }) => (
     <section className="context-header">
@@ -21,13 +40,10 @@ export const ContextHeader = ({ title, subtext, eyebrow }) => (
     </section>
 );
 
-export const Layout = ({ children, secondary }) => (
+export const Layout = ({ children }) => (
     <main className="layout-container">
         <div className="primary-workspace">
             {children}
-        </div>
-        <div className="secondary-panel">
-            {secondary}
         </div>
     </main>
 );
