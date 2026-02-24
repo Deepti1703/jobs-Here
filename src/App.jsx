@@ -13,6 +13,11 @@ import {
     Monitor
 } from 'lucide-react';
 
+import ReadinessCircle from './components/dashboard/ReadinessCircle';
+import SkillRadar from './components/dashboard/SkillRadar';
+import { ContinuePractice, WeeklyGoals, UpcomingAssessments } from './components/dashboard/DashboardWidgets';
+import { Card, CardHeader, CardTitle, CardContent } from './components/ui/Card';
+
 // Landing Page Components
 const Hero = () => {
     const navigate = useNavigate();
@@ -144,6 +149,45 @@ const DashboardLayout = () => {
     );
 };
 
+const DashboardPage = () => (
+    <div className="max-w-7xl mx-auto space-y-8">
+        <header>
+            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Performance Overview</h2>
+            <p className="text-gray-500 mt-1">Detailed breakdown of your placement readiness metrics.</p>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Column 1 */}
+            <div className="space-y-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-sm font-medium text-gray-500 uppercase tracking-wider">Overall Readiness</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex justify-center p-10">
+                        <ReadinessCircle score={72} />
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-sm font-medium text-gray-500 uppercase tracking-wider">Skill Breakdown</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <SkillRadar />
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Column 2 */}
+            <div className="space-y-8">
+                <ContinuePractice />
+                <WeeklyGoals />
+                <UpcomingAssessments />
+            </div>
+        </div>
+    </div>
+);
+
 // Placeholder Pages
 const PagePlaceholder = ({ title }) => (
     <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
@@ -158,7 +202,7 @@ function App() {
             <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/dashboard" element={<DashboardLayout />}>
-                    <Route index element={<PagePlaceholder title="Dashboard" />} />
+                    <Route index element={<DashboardPage />} />
                     <Route path="practice" element={<PagePlaceholder title="Practice" />} />
                     <Route path="assessments" element={<PagePlaceholder title="Assessments" />} />
                     <Route path="resources" element={<PagePlaceholder title="Resources" />} />
