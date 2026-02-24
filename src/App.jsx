@@ -1,0 +1,52 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { TopBar, Layout } from './components/layout/Layout';
+import {
+    HomePage,
+    DashboardPage,
+    SavedPage,
+    DigestPage,
+    SettingsPage,
+    TestPage,
+    ShipPage,
+    ProofPage,
+    NotFoundPage
+} from './pages/PlaceholderPages';
+import './index.css';
+
+function App() {
+    return (
+        <Router>
+            <div className="app-root">
+                <TopBar appName="Job Notification App" />
+
+                <Layout>
+                    <div style={{ paddingTop: 'var(--space-5)' }}>
+                        <Routes>
+                            <Route path="/" element={<HomePage />} />
+                            <Route path="/dashboard" element={<DashboardPage />} />
+                            <Route path="/saved" element={<SavedPage />} />
+                            <Route path="/digest" element={<DigestPage />} />
+                            <Route path="/settings" element={<SettingsPage />} />
+                            <Route path="/jt/07-test" element={<TestPage />} />
+                            <Route path="/jt/08-ship" element={<ShipPage />} />
+                            <Route path="/proof" element={<ProofPage />} />
+                            <Route path="*" element={<NotFoundPage />} />
+                        </Routes>
+                    </div>
+                </Layout>
+
+                <style>{`
+                    .app-root {
+                        display: flex;
+                        flex-direction: column;
+                        min-height: 100vh;
+                        width: 100%;
+                    }
+                `}</style>
+            </div>
+        </Router>
+    );
+}
+
+export default App;
