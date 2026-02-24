@@ -720,8 +720,15 @@ export const TestPage = () => {
     const [checkedItems, setCheckedItems] = useState([]);
 
     useEffect(() => {
-        const stored = JSON.parse(localStorage.getItem('jobTrackerTestStatus') || '[]');
-        setCheckedItems(stored);
+        try {
+            const stored = JSON.parse(localStorage.getItem('jobTrackerTestStatus') || '[]');
+            if (Array.isArray(stored)) {
+                setCheckedItems(stored);
+            }
+        } catch (e) {
+            console.error("Failed to parse test status", e);
+            setCheckedItems([]);
+        }
     }, []);
 
     const toggleItem = (id) => {
@@ -743,6 +750,7 @@ export const TestPage = () => {
 
     return (
         <PageContainer>
+            <div style={{ fontSize: '10px', color: '#eee', marginBottom: '4px' }}>Build v1.0.1-verify</div>
             <div className="flex justify-between items-center mb-24">
                 <h1 style={{ margin: 0 }}>Verification Checklist</h1>
                 <Button variant="secondary" size="small" onClick={resetTests}>Reset Test Status</Button>
@@ -818,8 +826,12 @@ export const ShipPage = () => {
     const [passedCount, setPassedCount] = useState(0);
 
     useEffect(() => {
-        const stored = JSON.parse(localStorage.getItem('jobTrackerTestStatus') || '[]');
-        setPassedCount(stored.length);
+        try {
+            const stored = JSON.parse(localStorage.getItem('jobTrackerTestStatus') || '[]');
+            setPassedCount(Array.isArray(stored) ? stored.length : 0);
+        } catch (e) {
+            setPassedCount(0);
+        }
     }, []);
 
     if (passedCount < 10) {
