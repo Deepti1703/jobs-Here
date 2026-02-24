@@ -1,7 +1,7 @@
 import React from 'react';
 import './FilterBar.css';
 
-export const FilterBar = ({ filters, onFilterChange }) => {
+export const FilterBar = ({ filters, onFilterChange, showScoreSort }) => {
     return (
         <div className="filter-bar">
             <div className="filter-group-main">
@@ -66,6 +66,7 @@ export const FilterBar = ({ filters, onFilterChange }) => {
                     className="filter-sort"
                 >
                     <option value="latest">Latest First</option>
+                    {showScoreSort && <option value="score">Match Score</option>}
                     <option value="salary">Salary (High to Low)</option>
                 </select>
             </div>

@@ -31,6 +31,37 @@
     border-radius: 2px;
 }
 
+.match-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 2px;
+    color: #fff;
+}
+
+.match-badge.high {
+    background-color: #2ecc71;
+}
+
+.match-badge.medium {
+    background-color: #f1c40f;
+    color: #333;
+}
+
+.match-badge.low {
+    background-color: #95a5a6;
+}
+
+.match-badge.none {
+    background-color: #ced4da;
+    color: #777;
+}
+
+.items-center {
+    align-items: center;
+}
+
 .posted-time {
     font-size: 12px;
     color: #999;

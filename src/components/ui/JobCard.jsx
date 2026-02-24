@@ -2,13 +2,27 @@ import React from 'react';
 import { Button } from './Button';
 import './JobCard.css';
 
-export const JobCard = ({ job, onView, onSave, isSaved }) => {
+export const JobCard = ({ job, onView, onSave, isSaved, matchScore }) => {
     const { title, company, location, mode, experience, salaryRange, source, postedDaysAgo } = job;
+
+    const getScoreCategory = (score) => {
+        if (score >= 80) return 'high';
+        if (score >= 60) return 'medium';
+        if (score >= 40) return 'low';
+        return 'none';
+    };
 
     return (
         <div className="job-card">
             <div className="job-card-header">
-                <span className="source-badge">{source}</span>
+                <div className="flex gap-8 items-center">
+                    <span className="source-badge">{source}</span>
+                    {matchScore !== undefined && (
+                        <span className={`match-badge ${getScoreCategory(matchScore)}`}>
+                            {matchScore}% Match
+                        </span>
+                    )}
+                </div>
                 <span className="posted-time">{postedDaysAgo === 0 ? 'Today' : `${postedDaysAgo} days ago`}</span>
             </div>
 
