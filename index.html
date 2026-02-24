@@ -5,89 +5,12 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jobs Here Premium Build System</title>
-  <link rel="stylesheet" href="./index.css" />
+  <title>Placement Readiness Platform</title>
 </head>
 
 <body>
-  <!-- Top Bar -->
-  <header class="top-bar justify-between">
-    <div class="brand">Jobs Here Premium</div>
-    <div class="progress">Step 1 / 4</div>
-    <div class="status-badge">Not Started</div>
-  </header>
-
-  <!-- Context Header -->
-  <section class="context-header">
-    <h1 style="font-size: 40px; margin-bottom: var(--space-8);">Initial Build Phase</h1>
-    <p style="color: #666;">Define your core project parameters and initialize the build environment.</p>
-  </section>
-
-  <!-- Main Content -->
-  <main class="main-layout">
-    <!-- Primary Workspace -->
-    <section class="primary-workspace">
-      <div class="card">
-        <h2 style="margin-bottom: var(--space-16);">Project Interaction</h2>
-        <p style="margin-bottom: var(--space-24);">This is where the main product interaction happens. The interface is
-          intentional and calm.</p>
-
-        <div style="display: flex; flex-direction: column; gap: var(--space-16);">
-          <div style="display: flex; flex-direction: column; gap: var(--space-8);">
-            <label class="sans" style="font-weight: 500;">Project Name</label>
-            <input type="text" placeholder="e.g. My Dashboard" />
-          </div>
-
-          <div style="display: flex; gap: var(--space-16);">
-            <button class="btn-primary">Solid Action</button>
-            <button class="btn-secondary">Outlined Action</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Secondary Panel -->
-    <aside class="secondary-panel">
-      <div class="card" style="background: transparent; border: none; padding: 0;">
-        <h3 style="margin-bottom: var(--space-16);">Next Steps</h3>
-        <p style="margin-bottom: var(--space-24); font-size: 15px; color: #444;">Follow the instructions to complete the
-          current build step. You can copy the generated prompt to use in your development environment.</p>
-
-        <div class="prompt-box card" style="background: #efefec; margin-bottom: var(--space-24);">
-          <code style="font-family: monospace; font-size: 14px;">npx create-vite@latest --template vanilla</code>
-        </div>
-
-        <div style="display: flex; flex-wrap: wrap; gap: var(--space-8);">
-          <button class="btn-secondary" style="font-size: 13px;">Copy</button>
-          <button class="btn-secondary" style="font-size: 13px;">Build in Lovable</button>
-          <button class="btn-primary" style="font-size: 13px;">It Worked</button>
-          <button class="btn-secondary" style="font-size: 13px; color: #b00; border-color: #fdd;">Error</button>
-        </div>
-      </div>
-    </aside>
-  </main>
-
-  <!-- Proof Footer -->
-  <footer class="proof-footer">
-    <div class="flex items-center gap-16">
-      <input type="checkbox" id="ui-built" style="width: auto;" />
-      <label for="ui-built">UI Built</label>
-    </div>
-    <div class="flex items-center gap-16">
-      <input type="checkbox" id="logic-working" style="width: auto;" />
-      <label for="logic-working">Logic Working</label>
-    </div>
-    <div class="flex items-center gap-16">
-      <input type="checkbox" id="test-passed" style="width: auto;" />
-      <label for="test-passed">Test Passed</label>
-    </div>
-    <div class="flex items-center gap-16">
-      <input type="checkbox" id="deployed" style="width: auto;" />
-      <label for="deployed">Deployed</label>
-    </div>
-  </footer>
-
-  <script type="module" src="/main.js"></script>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
 </body>
 
 </html>
