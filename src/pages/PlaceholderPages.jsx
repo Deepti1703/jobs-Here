@@ -703,6 +703,158 @@ export const SettingsPage = () => {
     );
 };
 
+export const TestPage = () => {
+    const defaultChecklist = [
+        { id: 1, label: 'Preferences persist after refresh', tooltip: 'Set preferences in Settings, refresh, and verify they are still there.' },
+        { id: 2, label: 'Match score calculates correctly', tooltip: 'Verify match badges on dashboard match your criteria (e.g. keywords in title = +25%).' },
+        { id: 3, label: '"Show only matches" toggle works', tooltip: 'Toggle the switch on Dashboard and verify jobs below threshold disappear.' },
+        { id: 4, label: 'Save job persists after refresh', tooltip: 'Save a job, refresh, and verify it still shows as "Saved".' },
+        { id: 5, label: 'Apply opens in new tab', tooltip: 'Click "Apply" and confirm it opens a new browser window.' },
+        { id: 6, label: 'Status update persists after refresh', tooltip: 'Change a job status (e.g. to Applied), refresh, and verify color stays blue.' },
+        { id: 7, label: 'Status filter works correctly', tooltip: 'Filter by "Applied" on dashboard and verify only those show.' },
+        { id: 8, label: 'Digest generates top 10 by score', tooltip: 'Generate digest and confirm jobs are sorted by match score.' },
+        { id: 9, label: 'Digest persists for the day', tooltip: 'Generate digest, refresh, and confirm it doesnt disappear.' },
+        { id: 10, label: 'No console errors on main pages', tooltip: 'Open DevTools (F12) and check that no red errors appear while navigating.' },
+    ];
+
+    const [checkedItems, setCheckedItems] = useState([]);
+
+    useEffect(() => {
+        const stored = JSON.parse(localStorage.getItem('jobTrackerTestStatus') || '[]');
+        setCheckedItems(stored);
+    }, []);
+
+    const toggleItem = (id) => {
+        const newItems = checkedItems.includes(id)
+            ? checkedItems.filter(i => i !== id)
+            : [...checkedItems, id];
+        setCheckedItems(newItems);
+        localStorage.setItem('jobTrackerTestStatus', JSON.stringify(newItems));
+    };
+
+    const resetTests = () => {
+        if (window.confirm('Reset all test progress?')) {
+            setCheckedItems([]);
+            localStorage.setItem('jobTrackerTestStatus', JSON.stringify([]));
+        }
+    };
+
+    const passedCount = checkedItems.length;
+
+    return (
+        <PageContainer>
+            <div className="flex justify-between items-center mb-24">
+                <h1 style={{ margin: 0 }}>Verification Checklist</h1>
+                <Button variant="secondary" size="small" onClick={resetTests}>Reset Test Status</Button>
+            </div>
+
+            <div className={`summary-banner mb-32 ${passedCount === 10 ? 'all-passed' : ''}`}>
+                <h3 className="serif" style={{ margin: 0 }}>Tests Passed: {passedCount} / 10</h3>
+                {passedCount < 10 ? (
+                    <p style={{ margin: '4px 0 0', opacity: 0.8, fontSize: '14px' }}>Resolve all issues before shipping.</p>
+                ) : (
+                    <p style={{ margin: '4px 0 0', opacity: 0.8, fontSize: '14px' }}>All systems verified. Ready to ship!</p>
+                )}
+            </div>
+
+            <Card padding="large">
+                <div className="checklist-items">
+                    {defaultChecklist.map(item => (
+                        <div key={item.id} className="checklist-item mb-16">
+                            <label className="flex items-start gap-12 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={checkedItems.includes(item.id)}
+                                    onChange={() => toggleItem(item.id)}
+                                    style={{ marginTop: '4px', width: '20px', height: '20px' }}
+                                />
+                                <div>
+                                    <span style={{ fontWeight: 500, display: 'block' }}>{item.label}</span>
+                                    <span style={{ fontSize: '12px', color: '#888' }} title={item.tooltip}>
+                                        How to test ⓘ
+                                    </span>
+                                </div>
+                            </label>
+                        </div>
+                    ))}
+                </div>
+            </Card>
+
+            <div className="mt-40 text-center">
+                <Link to="/jt/08-ship">
+                    <Button disabled={passedCount < 10} style={{ width: passedCount < 10 ? 'auto' : '100%' }}>
+                        {passedCount < 10 ? 'Shipping Locked (10/10 required)' : 'Go to Shipping'}
+                    </Button>
+                </Link>
+            </div>
+
+            <style>{`
+                .summary-banner {
+                    background: #fdfdfd;
+                    border: 1px solid var(--border-color);
+                    padding: 24px;
+                    border-radius: var(--border-radius);
+                    transition: all 0.3s;
+                }
+                .summary-banner.all-passed {
+                    background: #27ae60;
+                    color: #fff;
+                    border-color: #27ae60;
+                }
+                .checklist-item {
+                    border-bottom: 1px solid #f9f9f9;
+                    padding-bottom: 16px;
+                }
+                .checklist-item:last-child {
+                    border-bottom: none;
+                    padding-bottom: 0;
+                }
+            `}</style>
+        </PageContainer>
+    );
+};
+
+export const ShipPage = () => {
+    const [passedCount, setPassedCount] = useState(0);
+
+    useEffect(() => {
+        const stored = JSON.parse(localStorage.getItem('jobTrackerTestStatus') || '[]');
+        setPassedCount(stored.length);
+    }, []);
+
+    if (passedCount < 10) {
+        return (
+            <PageContainer>
+                <div style={{ textAlign: 'center', padding: '100px 0' }}>
+                    <div className="lock-icon mb-24" style={{ fontSize: '64px' }}>🔒</div>
+                    <h1 className="serif mb-16">Shipping Locked</h1>
+                    <p className="mb-32" style={{ color: '#666', fontSize: '18px' }}>Complete all tests before shipping.</p>
+                    <Link to="/jt/07-test">
+                        <Button>Back to Checklist</Button>
+                    </Link>
+                </div>
+            </PageContainer>
+        );
+    }
+
+    return (
+        <PageContainer>
+            <div style={{ textAlign: 'center', padding: '100px 0' }}>
+                <div className="ship-icon mb-24" style={{ fontSize: '64px' }}>🚀</div>
+                <h1 className="serif mb-16">Ready for Departure</h1>
+                <p className="mb-40" style={{ color: '#666', fontSize: '18px' }}>All 10 quality gates have been cleared successfully.</p>
+                <Card padding="large" className="mb-40" style={{ maxWidth: '400px', margin: '0 auto 40px' }}>
+                    <p style={{ fontStyle: 'italic', color: '#333' }}>"Quality is not an act, it is a habit."</p>
+                    <p style={{ fontWeight: '700', fontSize: '14px', marginTop: '8px' }}>— Project Verified</p>
+                </Card>
+                <Link to="/">
+                    <Button>Return to App</Button>
+                </Link>
+            </div>
+        </PageContainer>
+    );
+};
+
 export const ProofPage = () => (
     <PageContainer>
         <h1 className="mb-24">Proof of Work</h1>

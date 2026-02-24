@@ -7,6 +7,8 @@ import {
     SavedPage,
     DigestPage,
     SettingsPage,
+    TestPage,
+    ShipPage,
     ProofPage,
     NotFoundPage
 } from './pages/PlaceholderPages';
@@ -26,6 +28,8 @@ function App() {
                             <Route path="/saved" element={<SavedPage />} />
                             <Route path="/digest" element={<DigestPage />} />
                             <Route path="/settings" element={<SettingsPage />} />
+                            <Route path="/jt/07-test" element={<TestPage />} />
+                            <Route path="/jt/08-ship" element={<ShipPage />} />
                             <Route path="/proof" element={<ProofPage />} />
                             <Route path="*" element={<NotFoundPage />} />
                         </Routes>
